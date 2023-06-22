@@ -1,3 +1,5 @@
+(in-package :chip8)
+
 (deftype int4 () '(unsinged-byte 4)) ; 0 to 15
 (deftype int8 () '(unsigned-byte 8))
 (deftype int12 () '(unsigned-byte 12))
