@@ -3,7 +3,9 @@
 	:description "Simple Chip-8 emulator."
 	:author "Steve Losh"
 	:depends-on (
-							 :losh)
+							 :losh
+							 :iterate
+							 )
 	:serial t
 	:components ((:file "package")
 							 (:module "src" :serial t
