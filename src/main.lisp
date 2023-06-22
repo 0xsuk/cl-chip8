@@ -187,3 +187,16 @@
 
 (define-instruction op-ret () ; RET
 	(setf program-counter (vector-pop stack)))
+
+(defun-inline digit (position integer &optional (base 10))
+	"take `position`th digit in the integer"
+	(-<> integer
+			 (floor <> (expt base position))
+			 (mod <> base)))
+
+(define-instruction op-ld-bcd<vx (_ r _ _) ; LD B, Vx
+	(let ((number (register r)))
+		(setf (aref memory (+ index 0)) (digit 2 number)
+					(aref memory (+ index 1)) (digit 1 number)
+					(aref memory (+ index 2)) (digit 0 number)))
+	)

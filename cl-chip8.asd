@@ -3,6 +3,7 @@
 	:description "Simple Chip-8 emulator."
 	:author "Steve Losh"
 	:depends-on (
+							 :cl-arrows
 							 :losh
 							 :iterate
 							 )
