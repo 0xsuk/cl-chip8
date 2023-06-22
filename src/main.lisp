@@ -170,3 +170,20 @@
 																instruction))))
 			)))
 
+(define-instruction op-rand (_ r (mask 2)) ; RND
+	"generate random number"
+	(setf (register r)
+				(logand (random 256) mask)))
+
+(define-instruction op-jp-imm (_ (target 3)) ; JP addr
+	(setf program-counter target))
+
+(define-instruction op-jp-imm+reg (_ (target 3))
+	(setf program-counter (chop 12 (+ target (register 0))))) ; JP V0 + addr
+
+(define-instruction op-call (_ (target 3)) ; CALL addr
+	(vector-push program-counter stack)
+	(setf program-counter target))
+
+(define-instruction op-ret () ; RET
+	(setf program-counter (vector-pop stack)))
