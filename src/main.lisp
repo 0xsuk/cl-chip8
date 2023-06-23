@@ -230,4 +230,21 @@
 (define-instruction op-add-index<reg (_ r)
 	(zapf index (chop 16 (+ % (register r)))))
 
+(defun-inline get-bit (position integer)
+	(ldb (byte 1 position) integer))
 
+(defun-inline >>_8 (v)
+	(values (ash v -1)
+					(get-bit 0 v)))
+
+(defun-inline <<_8 (v)
+	(values (chop 8 (ash v 1))
+					(get-bit 7 v)))
+
+(define-instruction op-shr (_ r) ; SHR
+	(setf (values (register r) flag)
+				(>>_8 (register r))))
+
+(define-instruction op-shl (_ r) ; SHL
+	(setf (values (register r) flag)
+				(<<_8 (register r))))
