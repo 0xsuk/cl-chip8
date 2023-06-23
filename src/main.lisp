@@ -248,3 +248,17 @@
 (define-instruction op-shl (_ r) ; SHL
 	(setf (values (register r) flag)
 				(<<_8 (register r))))
+
+(defmacro macro-map (lambda-list items &rest body)
+	(with-gensyms (macro)
+		`(macrolet ((,macro ,(ensure-list lambda-list) ,@body))
+			 ,@(iterate (for item :in items)
+					 (collect `(,macro ,@(ensure-list item)))))))
+
+(macro-map ;; AND/OR/XOR
+    (NAME    OP)
+    ((op-and logand)
+     (op-or  logior)
+     (op-xor logxor))
+  `(define-instruction ,name (_ destination source _)
+    (zapf (register destination) (,op % (register source)))))
