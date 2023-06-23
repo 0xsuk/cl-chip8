@@ -200,3 +200,34 @@
 					(aref memory (+ index 1)) (digit 1 number)
 					(aref memory (+ index 2)) (digit 0 number)))
 	)
+
+(defun-inline +_8 (x y)
+	(let ((result (+ x y)))
+		(values (chop 8 result)
+						(if (> result 255) 1 0)))) ; carry
+
+(defun-inline -_8 (x y)
+	(let ((result (- x y)))
+		(values (chop 8 result)
+						(if (> x y) 1 0)))) ; not borrow
+
+(define-instruction op-add-reg<reg (_ rx ry) ; ADD Vx, Vy (8-bit)
+	(setf (values (register rx) flag)
+				(+_8 (register rx) (register ry))))
+
+(define-instruction op-sub-reg<reg (_ rx ry) ; ADD Vx, Vy (8-bit)
+	(setf (values (register rx) flag)
+				(-_8 (register rx) (register ry))))
+
+(define-instruction op-subn-reg<reg (_ rx ry)
+	(setf (values (register rx) flag)
+				(-_8 (register ry) (register rx))))
+
+(define-instruction op-add-reg<imm (_ r (immediate 2)) ;; ADD Vx, Imm
+	;; For some weird reason the ADD immediate op doesn't set the flag
+	(zapf (register r) (+_8 % immediate)))
+
+(define-instruction op-add-index<reg (_ r)
+	(zapf index (chop 16 (+ % (register r)))))
+
+
