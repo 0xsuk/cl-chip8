@@ -264,11 +264,16 @@
            `(define-instruction ,name (_ destination source _)
               (zapf (register destination) (,op % (register source)))))
 
+(defun-inline not= (x y)
+	(not (= x y)))
+
 (macro-map ; SE/SNE
            (NAME            TEST X-ARG  X-FORM        Y-ARG         Y-FORM)
            ((op-se-reg-imm  =    (r 1)  (register r)  (immediate 2) immediate)
             (op-sne-reg-imm not= (r 1)  (register r)  (immediate 2) immediate)
             (op-se-reg-reg  =    (rx 1) (register rx) (ry 1)        (register ry))
             (op-sne-reg-reg not= (rx 1) (register rx) (ry 1)        (register ry)))
-           `(define-instruction ,name)
+           `(define-instruction ,name (_ ,x-arg ,y-arg)
+							(when (,test ,x-form ,y-form)
+								(incf program-counter 2)))
            )
