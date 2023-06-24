@@ -144,6 +144,21 @@
                 (#x55 (call op-ld-mem<regs))
                 (#x65 (call op-ld-regs<mem)))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+	(defun parse-instruction-argument-bindings (argument-list)
+		(flet ((normalize-arg (arg)
+						 (destructuring-bind (symbol &optional (nibbles 1))
+								 (ensure-list arg)
+							 (list symbol nibbles))))
+			(iterate
+				(for (symbol nibbles) :in (mapcar #'normalize-arg argument-list))
+				(for position :first 3 :then (- position nibbles))
+				(when (not (eql symbol '_))
+					(collect `(,symbol (ldb (byte ,(* nibbles 4)
+																				,(* position 4))
+																	instruction))))
+				))))
+
 (defmacro define-instruction (name argument-list &body body)
   `(progn
      (declaim (ftype (function (chip int16) null) ,name))
@@ -155,20 +170,6 @@
            (let ,(parse-instruction-argument-bindings argument-list)
              ,@body)))
        nil)))
-
-(defun parse-instruction-argument-bindings (argument-list)
-  (flet ((normalize-arg (arg)
-           (destructuring-bind (symbol &optional (nibbles 1))
-               (ensure-list arg)
-             (list symbol nibbles))))
-    (iterate
-      (for (symbol nibbles) :in (mapcar #'normalize-arg argument-list))
-      (for position :first 3 :then (- position nibbles))
-      (when (not (eql symbol '_))
-        (collect `(,symbol (ldb (byte ,(* nibbles 4)
-                                      ,(* position 4))
-                                instruction))))
-      )))
 
 (define-instruction op-rand (_ r (mask 2)) ; RND
   "generate random number"
