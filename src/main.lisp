@@ -277,3 +277,24 @@
 							(when (,test ,x-form ,y-form)
 								(incf program-counter 2)))
            )
+
+(macro-map ;; LD
+					 (NAME           ARGLIST         DESTINATION   SOURCE)
+					 ((op-ld-i<imm   (_ (value 3))   index         value)
+						(op-ld-reg<imm (_ r (value 2)) (register r)  value)
+						(op-ld-reg<reg (_ rx ry _)     (register rx) (register ry))
+						(op-ld-reg<dt  (_ r _ _)       (register r)  delay-timer)
+						(op-ld-dt<reg  (_ r _ _)       delay-timer   (register r))
+						(op-ld-st<reg  (_ r _ _)       sound-timer   (register r)))
+					 `(define-instruction ,name ,arglist
+							(setf ,destination ,source)))
+
+(define-instruction op-ld-mem<regs (_ n _ _) ; LD [I] < Vn
+	"loads consecutive bytes of memory with the contents of registers V0 through Vn, starting at wherever the index register is pointing"
+	(replace memory registers :start1 index :end2 (1+ n)))
+
+(define-instruction op-ld-regs<mem (_ n _ _) ; LD Vn < [I]
+	"loads the contents of memory into the registers V0 through Vn"
+	(replace registeres memory :end1 (1+ n) :start2 index))
+
+
