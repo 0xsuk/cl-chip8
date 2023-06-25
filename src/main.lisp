@@ -6,6 +6,8 @@
 (deftype int16 () '(unsigned-byte 16))
 
 (defconstant +memory-size+ (* 1024 4))
+(defconstant +screen-width+ 64)
+(defconstant +screen-height+ 32)
 
 ; in function call, type should be quoted to prevent evaluation (ex: (make-array 16 :element-type 'int8))
 ; in slot argument, type should not be quoted because that is how defstruct treats argument (ex: (running t :type boolean))
@@ -25,6 +27,10 @@
    :type (simple-array int8 (#.+memory-size+))
    :read-only t)
   (loaded-rom nil :type (or null string))
+	(video (make-array (* +screen-height+ +screen-width+) :element-type 'fixnum) ; each element is eitehr `on` of `off`, but due to a bug in QT 4, we need to store 255 or 0 ; why fixnum?
+	 :type (simple-array fixnum (#.(* +screen-height+ +screen-width+)))
+	 :read-only t)
+	(video-dirty t :type boolean)
   )
 
 (defun-inline chip-flag (chip)
@@ -32,6 +38,13 @@
 
 (defun-inline (setf chip-flag) (new-value chip)
   (setf (aref (chip-registers chip) #xF) new-value))
+
+(defun-inline vref (chip x y) ; x is col, y is row
+	(aref (chip-video chip) (+ (* +screen-width+ y) x)))
+
+(defun-inline (setf vref) (new-value chip x y)
+	(setf (aref (chip-video chip) (+ (* +screen-width+ y) x))
+				new-value))
 
 (define-with-macro chip
   running
